@@ -6,7 +6,7 @@ import sys
 import time
 
 if sys.platform in ["esp8266", "esp32"]:
-    from machine import UART as Serial
+    from machine import UART
 elif sys.platform == "linux":
     from serial import Serial
 
@@ -17,7 +17,7 @@ class PMS7003:
     def __init__(self, port):
         self._frame_header = b"BM\x00\x1c"
         if sys.platform in ["esp8266", "esp32"]:
-            self._connection = Serial(
+            self._connection = UART(
                 port, baudrate=9600, bits=8, parity=None, stop=1, rxbuf=40
             )
         elif sys.platform == "linux":

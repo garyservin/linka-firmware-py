@@ -2,6 +2,7 @@ import sys
 import time
 
 if sys.platform in ["esp8266", "esp32"]:
+    import machine
     import network
     import ntptime
     import ubinascii as binascii
@@ -35,6 +36,9 @@ class LinkaSensor:
             "Content-Type": "application/json; charset=utf-8",
             "x-api-key": self.api_key,
         }
+
+        if sys.platform in ["esp8266", "esp32"]:
+            self.led = machine.Pin(2, machine.Pin.OUT)
 
     @staticmethod
     def get_mac():
@@ -79,7 +83,7 @@ class LinkaSensor:
                     "description": self.description,
                     "pm1dot0": pm_data["pm010_atm"],
                     "pm2dot5": pm_data["pm025_atm"],
-                    "pm10": pm_data["pmq00_atm"],
+                    "pm10": pm_data["pm100_atm"],
                     "longitude": self.longitude,
                     "latitude": self.latitude,
                     "recorded": timestamp,
@@ -92,8 +96,12 @@ class LinkaSensor:
         """Publish data to backend server."""
         if data:
             print(f"Publishing to {self.linka_url} with: {data}")
+            if sys.platform in ["esp8266", "esp32"]:
+                self.led.off()
             json_data = json.dumps(data)
             requests.post(self.linka_url, data=json_data, headers=self.headers)
+            if sys.platform in ["esp8266", "esp32"]:
+                self.led.on()
         else:
             print("Unable to read data from sensor, not publishing")
 
